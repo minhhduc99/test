@@ -204,4 +204,5 @@ class PersonImport(viewsets.ModelViewSet):
         Person.objects.bulk_create(person_list)
 
         return Response("Successfully upload the data")
+    # edit thêm view confirm upload
 -------------------------------------------------------------

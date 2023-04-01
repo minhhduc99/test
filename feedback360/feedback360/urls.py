@@ -137,3 +137,71 @@ Thêm một đường dẫn trong file urls.py để gọi view này.
 python
 Copy code
 from django.urls import path
+
+----------------------------------------------------------
+Lưu file csv trong excel (CSV utf-8(comma delimited))
+from django.shortcuts import render
+from django.http import HttpResponse
+from datetime import datetime
+from rest_framework import views
+import csv
+
+from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage
+
+from rest_framework import serializers, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Person
+
+fs = FileSystemStorage(location='tmp/')
+# Create your views here.
+
+
+def index(request):
+    return render(request, 'my_app/welcome.html', {'today': datetime.today()})
+
+
+class PersonSerializer(serializers.Serializer):
+    class Meta:
+        model = Person
+        fields = '__all__'
+
+
+class PersonImport(viewsets.ModelViewSet):
+    queryset = Person.objects.all()
+    serializer_class = PersonSerializer
+
+    @action(detail=False, methods=['POST'])
+    def upload_data(self, request):
+        """Upload data from CSV"""
+        file = request.FILES.get("file")
+        # file = request.FILES["file"]
+        content = file.read()  # these are bytes
+        file_content = ContentFile(content)
+        file_name = fs.save(
+            "_tmp.csv", file_content
+        )
+        tmp_file = fs.path(file_name)
+
+        csv_file = open(tmp_file, errors="ignore")
+        reader = csv.reader(csv_file)
+        next(reader)
+
+        person_list = []
+        for row in reader:
+            (
+                first_name,
+                last_name
+            ) = row
+            person_list.append(
+                Person(
+                    first_name=first_name,
+                    last_name=last_name
+                )
+            )
+
+        Person.objects.bulk_create(person_list)
+
+        return Response("Successfully upload the data")
+-------------------------------------------------------------

@@ -206,3 +206,11 @@ class PersonImport(viewsets.ModelViewSet):
         return Response("Successfully upload the data")
     # edit thêm view confirm upload
 -------------------------------------------------------------
+------------------------------
+Xem code secu engine phần generate file excel và đính kèm vào mail để tương tự tạo file pdf feedbacks đính kèm vào mail
+-> Giải quyết tính năng gửi kết quả kèm mail đóng batch
+---------------------------------
+----------------------------
+Về tính năng download feedback khi users muốn (thao tác trên giao diện là users ấn nút Download thì file pdf tải về)
+-> Xem export schedule của OTM
+-----------------------------

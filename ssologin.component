@@ -1,0 +1,145 @@
+- ssologin.component.css
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+- ssologin.component.html
+<div class="app-body">
+  <main class="main d-flex align-items-center">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8 mx-auto">
+          <div class="card-group">
+            <div class="card p-4">
+              <div class="card-body">
+                <form>
+                  <h1 style="text-align: center;">Login Selection</h1>
+                  <p class="text-muted" style="text-align: center;">{{message}}</p>
+                  <div class="row justify-content-center mt-2">
+                    <div class="col-6">
+                      <button *ngIf="isLoggingIn; else logged_in" type="button" class="btn btn-primary px-4 w-100" (click)="loginSSO()">Login Using SSO service</button>
+                      <ng-template #logged_in>
+                        <button type="button" class="btn btn-success px-4 w-100" (click)="registerSSO()">Register New DAP SSO-Account</button>
+                        <button type="button" class="btn btn-danger px-4 w-100 mt-2" (click)="logoutSSO()">Logout SSO service</button>
+                      </ng-template>
+                    </div>
+                  </div>
+                  <div class="row justify-content-center mt-2">
+                    <div class="col-6">
+                      <button type="button" class="btn btn-secondary px-4 w-100" (click)="loginLocal()">Login Using Local Account</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+- ssologin.component.component.spec.ts
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { SSOLoginComponent } from './ssologin.component';
+
+describe('SSOLoginComponent', () => {
+  let component: SSOLoginComponent;
+  let fixture: ComponentFixture<SSOLoginComponent>;
+
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [ SSOLoginComponent ]
+    })
+    .compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(SSOLoginComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+- ssologin.component.ts
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { KeycloakService } from 'keycloak-angular';
+import { AuthenticationService } from '../../services/authentication.service';
+
+
+@Component({
+  selector: 'app-ssologin',
+  templateUrl: './ssologin.component.html',
+  styleUrls: ['./ssologin.component.css']
+})
+export class SSOLoginComponent implements OnInit {
+
+  message = 'checking SSO status ...'
+  isLoggingIn = true;
+
+  constructor( private router: Router,
+    private keycloakService: KeycloakService,
+    private authenticationService: AuthenticationService ) {
+    this.keycloakService.isLoggedIn().then(async (isLoggedIn) => {
+      if(isLoggedIn) {
+        try {
+          // update user profile if authenticated
+          let userProfile = await keycloakService.loadUserProfile();
+          console.log(userProfile);
+          authenticationService.loginSSO(userProfile.username, await keycloakService.getToken()).subscribe(
+            data => {
+              this.message = 'SSO authenticated!';
+              console.log('login success ' + data);
+              this.router.navigate(['/']);
+            },
+            error => {
+              this.message = 'Please register new DAP account for \'' + userProfile.username + '\' SSO account';
+              this.isLoggingIn = false;
+              console.log('login error ' + error);
+            }
+          );
+        } catch (e) {
+          console.log('exception ' + e);
+        }
+
+      } else {
+        console.log('not authenticated!');
+        this.message = 'Failed to authenticated using SSO. Please select a login option';
+      }
+
+    }).catch((e) => {
+      console.log('authenticate error: ' + e);
+      this.message = 'Failed to authenticated using SSO. Please select a login option';
+    });
+
+  }
+
+  ngOnInit() {
+  }
+
+  loginLocal() {
+    this.router.navigate(['/login']);
+  }
+
+  loginSSO() {
+    this.keycloakService.login({redirectUri: window.location.origin});
+  }
+
+  logoutSSO() {
+    this.keycloakService.logout(window.location.origin);
+  }
+
+  registerSSO() {
+    this.router.navigate(['/sso_register']);
+  }
+
+}

@@ -1,0 +1,75 @@
+- views.py
+from django.http import JsonResponse, HttpResponse
+from django.contrib.auth import logout
+
+from rest_framework import views
+from rest_framework.response import Response
+
+from .utils import validate_token, generate_jwt_token, keycloak_request
+from apps.authorization.permissions import AllowAnyMixin
+
+class LoginView(AllowAnyMixin, views.APIView):
+    def get(self, request):
+        token = request.headers["Authorization"].split(' ')[1]
+        print("Token ", token)
+        is_validated = validate_token(token)
+        print("Is validated ", is_validated)
+        if is_validated is True:
+            print("Is checking")
+            keycloak_response = keycloak_request(token)
+            user_id = keycloak_response.json()['preferred_username']
+            jwt_token = generate_jwt_token(user_id)
+            request.session['jwt_token'] = jwt_token
+            print(request.session.get('jwt_token'))
+            return JsonResponse(
+                {"token": jwt_token}
+            )
+        return HttpResponse(status=401)
+    
+- utils.py (pyjwt)
+import requests
+import jwt
+from django.conf import settings
+
+
+def keycloak_request(token):
+    url = settings.KEYCLOAK_SERVER_URL + "/auth/realms/" + \
+        settings.KEYCLOAK_REALM + "/protocol/openid-connect/userinfo"
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = requests.get(url, headers=headers)
+    return response
+
+
+def validate_token(token):
+    response = keycloak_request(token)
+    if response.status_code == 200:
+        return True
+    return False
+
+
+def generate_jwt_token(user_info):
+    payload = {'user_info': user_info}
+    
+    return jwt.encode(payload=payload, key="secret", algorithm="HS256")
+    
+- permissions.py
+from rest_framework.permissions import BasePermission, AllowAny
+
+
+class CustomIsAuthenticated(BasePermission):
+    def has_permission(self, request, view):
+        jwt_token = request.session.get('jwt_token')
+        fe_token = request.headers["Authorization"].split(' ')[1]
+        print(jwt_token)
+        if fe_token == jwt_token:
+            return True
+        return False
+
+- settings.py
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "apps.authorization.permissions.CustomIsAuthenticated",
+    ],
+}

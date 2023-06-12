@@ -1,0 +1,69 @@
+name: Build Docker on STG
+on:
+  push:
+    branches:
+      - dev
+      - duc.tran
+
+jobs:
+  build-image:
+    runs-on: [srv]
+    outputs:
+      TAG: ${{ steps.build.outputs.tag }}
+    steps:
+      - name: Checkout devops code
+        uses: actions/checkout@v3
+
+      - name: Build image
+        run: |
+          echo "Build image"
+          set -e
+          ENV="development"
+          JFROG_URL="artifactory.svmcdevops.com:30807"
+          REPO=docker-local/fb360/stg/be
+          BUILD_NUMBER=$GITHUB_RUN_NUMBER
+          TAG=$JFROG_URL/$REPO:$BUILD_NUMBER
+          # Build docker image
+          docker login $JFROG_URL --username ${{secrets.JFROG_USERNAME}} \
+            --password ${{secrets.JFROG_PASSWORD}}
+          docker build -t $TAG --build-arg env=$ENV --build-arg db_name=$DB_NAME . -f Docker/Dockerfile
+          # Push docker image to jfrog
+          docker push $TAG
+
+          # Set tag to job output
+          echo "::set-output name=tag::$TAG"
+
+      - name: Update image tag to devops repo
+        run: |
+          git clone https://${{ secrets.PERSONAL_TOKEN }}@github.sec.samsung.net/svmc-sre/devops-360-feedback.git
+          cd devops-360-feedback
+          git config --global user.email "github@samsung.com"
+          git config --global user.name "github"
+          sed -i 's/be:[0-9]\+/be:'"$GITHUB_RUN_NUMBER"'/g' k8s/be/staging/deployment.yaml
+          git add . k8s/be/staging/deployment.yaml && git commit -m "Update BE image number, committed by github" && git push origin master
+
+  scan-image:
+    needs: build-image
+    name: Trivy scan image
+    runs-on: [code-default]
+    container:
+      image: aquasec/trivy:0.41.0
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - name: Scan image
+        run: |
+          JFROG_URL="artifactory.svmcdevops.com:30807"
+          REPO=docker-local/fb360/stg/be
+          BUILD_NUMBER=$GITHUB_RUN_NUMBER
+          TAG=$JFROG_URL/$REPO:$BUILD_NUMBER
+          docker login $JFROG_URL --username ${{secrets.JFROG_USERNAME}} \
+            --password ${{secrets.JFROG_PASSWORD}}
+          docker pull $TAG
+          trivy --version
+          trivy image -f table $TAG
+      # - name: Upload json as artifact for later jobs
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: json
+      #     path: trivy-image.json

@@ -1,0 +1,50 @@
+class EditBatch(views.APIView):
+    @extend_schema(
+        request=BatchListSerializer,
+        responses={200: BatchListSerializer},
+        description="Description API: Get existing feedback batch"
+    )
+    def get(self, request, pk):
+        try:
+            question_batch = QuestionBatch.objects.filter(batch=pk)
+        except QuestionBatch.DoesNotExist:
+            return Response(status=404)
+        # questions_id = [qb.question.id for qb in question_batch]
+        # question_batch_ids = [qb.id for qb in question_batch]
+        questions = []
+        # for q_id in questions_id:
+        #     serializer = QuestionSerializer(Question.objects.get(pk=q_id))
+        #     questions.append(serializer.data)
+        for qb in question_batch:
+            question_batch_id = qb.id
+            serializer = QuestionListSerializer(Question.objects.get(pk=qb.question.id), context={'question_batch_id': question_batch_id})
+            questions.append(serializer.data)
+        
+            
+        batch = get_object_or_404(Batch.objects.all(), pk=pk)
+        # serializer = BatchListSerializer(batch, context={'question_batch': question_batch_ids, 'questions': questions})
+        serializer = BatchListSerializer(batch, context={'questions': questions})
+        
+        context = {
+            "message": "Listed Successfully",
+            "status": status.HTTP_200_OK,
+            "data": serializer.data,
+            "errors": None
+        }
+        
+        return Response(context)
+        
+        
+        
+class QuestionListSerializer(serializers.ModelSerializer):
+    question_batch_id = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Question
+        fields = ('id', 'question_title', 'question_type', 'question_content',
+                  'question_batch_id', 'created_by', 'updated_by', 'created_at', 'updated_at')
+        
+    def get_question_batch_id(self, obj):
+        question_batch_id = self.context.get('question_batch_id')
+        print(question_batch_id)
+        return question_batch_id

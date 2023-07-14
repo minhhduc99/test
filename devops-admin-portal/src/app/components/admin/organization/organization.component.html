@@ -1,0 +1,82 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-lg-9">
+      <div class="card">
+        <div class="card-header">
+          <i class="fa fa-align-justify"></i> <strong>Organizations</strong><small> ({{organizations.length}})</small>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered table-striped table-sm">
+            <thead>
+              <tr class="bg-primary text-center text-capitalize">
+                <th *ngFor="let header of tableHeaders;">{{header}}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let r of organizations;" class="hand-cursor" (click)="select(r)"
+                [ngClass]="{'bg-warning': (r.status != 'active')}">
+                <td *ngFor="let key of tableHeaders;" [ngClass]="{activeRow: r==selectedOrganization}">{{(key=='created' || key == 'updated') ? (r[key] | date: 'dd/MM/yy') : r[key]}}</td>
+                </tr>
+            </tbody>
+          </table>
+          <ul *ngIf="numberOfPages > 1" class="pagination">
+            <li *ngIf="currentPage > 0" class="page-item page-link hand-cursor" (click)="prevPage()">Prev</li>
+            <li *ngFor="let item of [].constructor(numberOfPages); let i = index" class="page-item page-link hand-cursor"
+              [ngClass]="{pageactive: i==currentPage}" (click)="selectPage(i)">{{i + 1}}</li>
+            <li *ngIf="currentPage < numberOfPages - 1" class="page-item page-link hand-cursor" (click)="nextPage()">Next</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!--/.col-->
+    <div class="col-lg-3">
+
+      <div class="card">
+        <div class="card-header">
+          <strong *ngIf="selectedOrganization; else new_content">Edit <small>{{selectedOrganization.name}}</small></strong>
+          <ng-template #new_content><strong>New Organization</strong></ng-template>
+
+        </div>
+
+        <div class="card-body">
+
+          <div class="form-group">
+            <label for="name">Organization Name</label>
+            <input type="text" class="form-control" id="name" name="org" placeholder="Enter organization name" [(ngModel)]="org.name" [readonly]="selectedOrganization">
+          </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" class="form-control" id="description" name="desc" placeholder="Enter description" [(ngModel)]="org.description">
+          </div>
+          <div class="form-group">
+            <label for="owner">Admins</label>
+            <div class="input-group">
+              <input type="text" id="owner" name="owner" class="form-control" placeholder="Admins" [(ngModel)]="org.owner_id">
+              <span class="input-group-append">
+                <button type="button" class="btn btn-primary">Select</button>
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="status">Status</label>
+            <div class="col-md-9">
+              <select id="status" name="status" class="form-control" [(ngModel)]="org.status">
+                <option value="active">Active</option>
+                <option value="deactived">Deactived</option>
+              </select>
+            </div>
+          </div>
+          <div *ngIf="error" class="col-form-label text-danger" >{{error}}</div>
+        </div>
+        <div *ngIf="isSAdmin()" class="card-footer">
+          <button class="btn btn-sm btn-primary" (click)="onSubmit()"><i class="fa fa-dot-circle-o"></i> Submit</button>
+          <button class="btn btn-sm btn-danger ml-1" (click)="onReset()"><i class="fa fa-ban"></i> New/Reset</button>
+        </div>
+
+      </div>
+
+    </div><!--/.col-->
+  </div>
+</div>

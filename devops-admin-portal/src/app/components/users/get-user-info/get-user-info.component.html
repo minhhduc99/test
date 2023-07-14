@@ -1,0 +1,44 @@
+<div class="app-body">
+  <main class="main d-flex align-items-center">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 mx-auto">
+          <div class="card mx-8">
+            <div class="card-body p-8">
+
+                <h1>Get User Information</h1>
+                <p class="text-muted">Input users list to textbox or upload a file (each user in 1 line)</p>
+
+                <div class="form-group row">
+                  <label class="col-md-2 col-form-label" for="purpose">Users list</label>
+                  <div class="col-md-10">
+                    <textarea  type="text" id="list" name="list" class="form-control" placeholder="Users List" rows="20"
+                      [(ngModel)]="usersList"></textarea>
+
+                  </div>
+                </div>
+
+                <div *ngIf="error" class="col-form-label text-danger" >{{error}}</div>
+                <div class="form-group row">
+                  <div class="col-md-2">
+                  </div>
+                  <div class="col-md-3">
+                    <button *ngIf="usersList" type="button" class="btn btn-block btn-primary" (click)="submit()">Submit</button>
+                  </div>
+                </div>
+
+            </div>
+            <div class="card-footer p-4">
+              <div class="form-group row">
+                <label class="col-md-2 col-form-label" for="status">Select File</label>
+                <div class="col-md-10">
+                  <input type="file" accept="*" (change)="load($event)">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

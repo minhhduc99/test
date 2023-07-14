@@ -1,0 +1,98 @@
+name: Build image for PRD
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build_image:
+    runs-on: [ code-default ]
+    outputs:
+      image: ${{ steps.prep.outputs.tagged_image }}
+      tag: ${{ steps.prep.outputs.tag }}
+    container:
+      image: actions-docker.bart.sec.samsung.net/buildpack:latest
+      options: --user root
+
+    steps:
+
+      - uses: code-actions/checkout@v3
+
+      - name: Prepare
+        id: prep
+        run: |
+          mv Docker/* .
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          IMAGE="artifactory.svmcdevops.com:30807/docker-local/dap/prd/dap"
+          echo ::set-output name=tagged_image::${IMAGE}:${TAG}
+          echo ::set-output name=tag::${TAG}
+
+      - name: Set up QEMU
+        uses: CODE-Actions/docker-setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: CODE-Actions/docker-setup-buildx-action@v2
+
+      - name: Docker login to JFOG
+        uses: CODE-Actions/docker-login-action@v2
+        with:
+          registry: ${{ secrets.ENDPOINT_JFROG }}
+          username: ${{ secrets.USERNAME_JFROG }}
+          password: ${{ secrets.PASSWORD_JFROG }}
+
+      - name: Build and push image
+        uses: CODE-Actions/docker-build-push-action@v4
+        with:
+          context: .
+          # push: true
+          file: Dockerfile_local
+          build-args: |
+            NODE_ENV=staging
+          tags: ${{ steps.prep.outputs.tagged_image }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker
+
+      - name: Save image to file
+        run: docker save -o image.docker ${{ steps.prep.outputs.tagged_image }}
+
+      - name: Upload docker image as artifact for following job
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker
+          path: image.docker
+
+  push-image:
+    needs: build_image
+    runs-on: [srv]
+    steps:
+      - name: Dowload docker image from artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docker
+
+      - name: Unpack image & push to artifactory
+        env:
+          TAG: ${{needs.build_image.outputs.image}}
+        run: |
+          ARTIFACTORY_URL="artifactory.svmcdevops.com:30807"
+          #Load image
+          docker load -i image.docker
+          # Push docker image to jfrog
+          docker login $ARTIFACTORY_URL --username ${{secrets.ARTIFACTORY_USERNAME}} --password ${{secrets.ARTIFACTORY_PASSWORD}}
+          docker push $TAG
+
+      - name: Update image tag to devops repo
+        run: |
+          rm -rf devops-dap
+          git clone https://${{ secrets.PERSONAL_TOKEN }}@github.sec.samsung.net/svmc-sre/devops-dap.git
+          cd devops-dap
+          git config --global user.email "github@samsung.com"
+          git config --global user.name "github"
+          sed -i -E "s/tag(.+)/tag\:\ ${{needs.build_image.outputs.tag}}/g" k8s/prd/dap/values.yaml
+          git add . k8s/prd/dap/values.yaml && git commit -m "Update tag, committed by github" && git push origin master
+
+
+
+  

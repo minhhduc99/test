@@ -1,0 +1,63 @@
+<!--/.col-->
+<div class="col-lg-6">
+  <div class="card">
+    <div class="card-header">
+      <strong *ngIf="user; else new_content">My Profile <small>{{user.account}}</small></strong>
+      <ng-template #new_content><strong>New User</strong></ng-template>
+    </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label for="account">SingleId</label>
+          <input type="text" class="form-control" id="account" name="account" placeholder="Enter SingleId" [(ngModel)]="user.account" [readonly]="true" >
+        </div>
+        <div class="form-group">
+          <label for="name">User Name</label>
+          <input type="text" class="form-control" id="name" name="user" placeholder="Enter User name" [(ngModel)]="user.name">
+        </div>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <input type="text" class="form-control" id="description" name="desc" placeholder="Enter description" [(ngModel)]="user.description">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" [(ngModel)]="user.password">
+        </div>
+        <div class="form-group">
+          <label for="repeat_password">Repeat Password</label>
+          <input type="password" class="form-control" id="repeat_password" name="repeat_password" placeholder="Repeat password" [(ngModel)]="user.repeat_password">
+        </div>
+
+        <div class="form-group row">
+          <label class="col-md-3 col-form-label" for="owner">Owner</label>
+          <div class="col-md-9">
+            <select id="owner" name="owner" class="form-control" [(ngModel)]="user.owner_id" disabled>
+              <option *ngFor="let r of organizations;" value="{{r.id}}">{{r.name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-md-3 col-form-label" for="role">Role</label>
+          <div class="col-md-9">
+            <select id="role" name="role" class="form-control" [(ngModel)]="user.role" disabled>
+              <option *ngFor="let r of roles;" value="{{r.role}}">{{r.display}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-md-3 col-form-label" for="status">Status</label>
+          <div class="col-md-9">
+            <select id="status" name="status" class="form-control" [(ngModel)]="user.status">
+              <option value="active">Active</option>
+              <option value="deactived">Deactived</option>
+            </select>
+          </div>
+        </div>
+        <div *ngIf="error" class="col-form-label text-danger" >{{error}}</div>
+        <div *ngIf="success" class="col-form-label text-success" >{{success}}</div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-sm btn-primary" (click)="onSubmit()"><i class="fa fa-dot-circle-o"></i> Submit</button>
+        <button class="btn btn-sm btn-danger ml-1" (click)="onReset()"><i class="fa fa-ban ml-1"></i> Reset</button>
+      </div>
+  </div>
+</div><!--/.col-->

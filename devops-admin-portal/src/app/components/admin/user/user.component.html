@@ -1,0 +1,115 @@
+<div class="animated fadeIn style-height-75">
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <i class="fa fa-align-justify"></i> <strong>Users</strong><small> ({{users.length}})</small>
+        </div>
+        <div class="card-body">
+          <table *ngIf="tableHeaders.length;" class="table table-bordered table-striped table-sm">
+            <thead>
+              <tr class="bg-primary text-center text-capitalize">
+                <th *ngFor="let header of tableHeaders;">{{header}}</th>
+              </tr>
+              <tr class="bg-primary text-center text-capitalize">
+                <td style='text-align: center;'>
+                  <button type="button" class="btn btn-ghost" (click)="onClearFilters()"><i class="fa fa-remove"></i></button>
+                </td>
+                <th *ngFor="let header of tableHeaders.slice(1, tableHeaders.length);"><input type="text" placeholder="{{header}}" class="form-control"
+                  [(ngModel)]="filters[header]" (change) = "onFilterChanged($event.target.value)"></th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let r of users;" class="hand-cursor" (click)="select(r)"
+                [ngClass]="{'bg-warning': (r.status != 'active')}">
+                <td *ngFor="let key of tableHeaders;" [ngClass]="{activeRow: r==selectedUser, 'text-center': key=='id'}">{{r[key]}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ul *ngIf="numberOfPages > 1" class="pagination">
+            <li *ngIf="currentPage > 0" class="page-item page-link hand-cursor" (click)="prevPage()">Prev</li>
+            <li *ngFor="let item of [].constructor(numberOfPages); let i = index" class="page-item page-link hand-cursor"
+              [ngClass]="{pageactive: i==currentPage}" (click)="selectPage(i)">{{i + 1}}</li>
+            <li *ngIf="currentPage < numberOfPages - 1" class="page-item page-link hand-cursor" (click)="nextPage()">Next</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!--/.col-->
+    <div class="col-lg-4 sticky">
+
+      <div class="card">
+        <div class="card-header">
+          <strong *ngIf="selectedUser; else new_content">Edit <small>{{selectedUser.account}}</small></strong>
+          <ng-template #new_content><strong>New User</strong></ng-template>
+        </div>
+          <div class="card-body">
+            <div class="form-group row">
+              <label class="col-md-4 col-form-label" for="account">SingleId</label>
+              <div class="col-md-8">
+                <input type="text" class="form-control" id="account" name="account" placeholder="Enter SingleId" [(ngModel)]="user.account" [readonly]="selectedUser" >
+              </div>
+              </div>
+            <div class="form-group row">
+              <label class="col-md-4 col-form-label" for="name">User Name</label>
+              <div class="col-md-8">
+              <input type="text" class="form-control" id="name" name="user" placeholder="Enter User name" [(ngModel)]="user.name">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-4 col-form-label" for="description">Description</label>
+              <div class="col-md-8">
+              <input type="text" class="form-control" id="description" name="desc" placeholder="Enter description" [(ngModel)]="user.description">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-4 col-form-label" for="password">Password</label>
+              <div class="col-md-8">
+              <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" [(ngModel)]="user.password">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-4 col-form-label" for="repeat_password">Re-Password</label>
+              <div class="col-md-8">
+              <input type="password" class="form-control" id="repeat_password" name="repeat_password" placeholder="Repeat password" [(ngModel)]="user.repeat_password">
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label" for="owner">Owner</label>
+              <div class="col-md-9">
+                <select id="owner" name="owner" class="form-control" [(ngModel)]="user.owner_id">
+                  <option *ngFor="let r of organizations;" value="{{r.id}}">{{r.name}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label" for="role">Role</label>
+              <div class="col-md-9">
+                <select id="role" name="role" class="form-control" [(ngModel)]="user.role">
+                  <option *ngFor="let r of roles;" value="{{r.role}}">{{r.display}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-3 col-form-label" for="status">Status</label>
+              <div class="col-md-9">
+                <select id="status" name="status" class="form-control" [(ngModel)]="user.status">
+                  <option value="active">Active</option>
+                  <option value="deactived">Deactived</option>
+                </select>
+              </div>
+            </div>
+            <div *ngIf="error" class="col-form-label text-danger" >{{error}}</div>
+            <div *ngIf="success" class="col-form-label text-success" >{{success}}</div>
+          </div>
+          <div *ngIf="isAdmins()" class="card-footer">
+            <button class="btn btn-sm btn-primary" (click)="onSubmit()"><i class="fa fa-dot-circle-o"></i> Submit</button>
+            <button class="btn btn-sm btn-danger ml-1" (click)="onReset()"><i class="fa fa-ban"></i> New/Reset</button>
+          </div>
+      </div>
+
+    </div><!--/.col-->
+  </div>
+</div>

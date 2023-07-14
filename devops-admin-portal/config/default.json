@@ -1,0 +1,17 @@
+{
+  "app": "DevOps Admin Portal",
+  "version": "0.0.3",
+  "env": "dev",
+  "document": "https://mobilerndhub.sec.samsung.net/wiki/display/SVMCSOP/Documents?",
+  "database_config": {
+    "filePath": "./firewall.sqlite3"
+  },
+  "cip_authen_url": "http://107.113.53.44:9906/uaaserver/api/users/login-mobile-hub",
+  "cip_authen_appName": "otm",
+  "send_mail_url": "http://107.113.53.215:9906",
+  "send_mail_user": "svmc.devops@samsung.com",
+  "keycloak": {
+    "realm": "sysops-svmc-services",
+    "serverUrl": "http://107.113.53.220:18094"
+  }
+}

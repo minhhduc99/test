@@ -1,0 +1,35 @@
+name: Trivy Scan
+
+on:
+  pull_request:
+    branches:
+      - master
+      - STG
+
+jobs:
+  scan_source:
+    name: Trivy scan source
+    runs-on: [code-default]
+    container:
+      image: svmc-devops-docker-local.bart.sec.samsung.net/devsecops/trichery-cli:v1.0.0
+      credentials:
+        username: ${{ secrets.BART_USERNAME }}
+        password: ${{ secrets.BART_PASSWORD }}
+    steps:
+      - uses: CODE-Actions/checkout@v3
+      - name: Scan repo
+        run: |
+          trivy --version
+          trivy fs -f table --ignore-unfixed --security-checks vuln,config,secret .
+          trivy fs -f json -o trivy-repo.json --ignore-unfixed --security-checks vuln,config,secret .
+      - id: datetime
+        run: echo "::set-output name=datetime::$(TZ=Asia/Ho_Chi_Minh date +'%Y-%m-%d_%H%M%S')"
+      - name: Scan and generate report format
+        run: |
+          trivy fs -f template --template @.github/workflows/html.tpl -o trivy-scan-${{steps.datetime.outputs.datetime}}.html --ignore-unfixed --security-checks vuln,config,secret .
+      - name: Upload report as artifact for storage
+        uses: actions/upload-artifact@v2
+        with:
+          name: trivy scan report ${{steps.datetime.outputs.datetime}}
+          path: |
+            trivy*

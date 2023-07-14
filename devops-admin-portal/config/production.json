@@ -1,0 +1,9 @@
+{
+  "env": "production",
+  "send_mail_url": "http://107.113.53.44:9906",
+  "keycloak": {
+    "realm": "SVMC-DEVOPS-PLATFORM",
+    "serverUrl": "http://107.113.53.63:48080",
+    "clientId": "dap"
+  }
+}

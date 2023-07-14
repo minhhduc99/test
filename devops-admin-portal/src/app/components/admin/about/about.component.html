@@ -1,0 +1,29 @@
+<div class="card">
+  <div class="card-header">
+    <strong>App Info</strong>
+  </div>
+
+  <div *ngIf="appInfo" class="card-body">
+
+    <div class="form-group">
+      <label for="name">App Name</label>
+      <input type="text" class="form-control" id="name" name="name" [(ngModel)]="appInfo.name" [readonly]="true">
+    </div>
+    <div class="form-group">
+      <label for="version">App Version</label>
+      <input type="text" class="form-control" id="version" name="version" [(ngModel)]="appInfo.version" [readonly]="true">
+    </div>
+    <div class="form-group">
+      <label for="env">App Environment</label>
+      <input type="text" class="form-control" id="env" name="env" [(ngModel)]="appInfo.env" [readonly]="true">
+    </div>
+    <div class="form-group">
+      <label for="wiki">User Manual</label>
+      <input type="text" class="form-control" id="wiki" name="wiki" [(ngModel)]="appInfo.document" [readonly]="true">
+    </div>
+    <div class="form-group">
+      <label for="cn">App Commit Number</label>
+      <input type="text" class="form-control" id="cn" name="cn" [(ngModel)]="appInfo.commit_number" [readonly]="true">
+    </div>
+
+</div>

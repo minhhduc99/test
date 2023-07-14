@@ -1,0 +1,6 @@
+{
+  "env": "staging",
+  "database_config": {
+    "filePath": "../data/firewall.sqlite3"
+  }
+}

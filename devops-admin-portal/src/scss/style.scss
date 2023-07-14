@@ -1,0 +1,23 @@
+// If you want to override variables do it here
+@import "variables";
+
+// Import styles
+@import "~@coreui/coreui/scss/coreui";
+
+// If you want to add something do it here
+@import "custom";
+
+.style-height-75{
+    height: 75vh;
+}
+.style-height-80{
+    height: 80vh;
+}
+.style-width-60{
+    width: 60vh;
+}
+.sticky {
+    height:100%;
+    position:sticky;
+    top:0;
+} 

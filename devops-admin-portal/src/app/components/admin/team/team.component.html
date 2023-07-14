@@ -1,0 +1,148 @@
+<div class="animated fadeIn h-100">
+  <div class="row">
+    <div class="col-lg-9">
+      <div class="card w-100">
+        <div class="card-header">
+          <i class="fa fa-align-justify"></i> <strong>Teams</strong><small> ({{teams.length}})</small>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered table-striped table-sm">
+            <thead>
+              <tr class="bg-primary text-center text-capitalize">
+                <th *ngFor="let header of tableHeaders;">{{header}}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let r of teams;" class="hand-cursor" (click)="select(r)"
+                [ngClass]="{'bg-warning': (r.status != 'active')}">
+                <td *ngFor="let key of tableHeaders;" [ngClass]="{activeRow: r==selectedTeam}">{{(key=='created' || key == 'updated') ? (r[key] | date: 'dd/MM/yy') : r[key]}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ul *ngIf="numberOfPages > 1" class="pagination">
+            <li *ngIf="currentPage > 0" class="page-item page-link hand-cursor" (click)="prevPage()">Prev</li>
+            <li *ngFor="let item of [].constructor(numberOfPages); let i = index" class="page-item page-link hand-cursor"
+              [ngClass]="{pageactive: i==currentPage}" (click)="selectPage(i)">{{i + 1}}</li>
+            <li *ngIf="currentPage < numberOfPages - 1" class="page-item page-link hand-cursor" (click)="nextPage()">Next</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+    <!--/.col-->
+    <div class="col-lg-3">
+
+      <div class="card">
+        <div class="card-header">
+          <strong *ngIf="selectedTeam; else new_content">Edit <small>{{selectedTeam.name}}</small></strong>
+          <ng-template #new_content><strong>New Team</strong></ng-template>
+
+        </div>
+        <div class="card-body">
+
+          <div class="form-group">
+            <label for="name">Team Name</label>
+            <input type="text" class="form-control" id="name" name="team" placeholder="Enter Team name" [(ngModel)]="team.name" [readonly]="selectedTeam">
+          </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" class="form-control" id="description" name="desc" placeholder="Enter description" [(ngModel)]="team.description">
+          </div>
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="owner">Owner</label>
+            <div class="col-md-9">
+              <select id="owner" name="owner" class="form-control" [(ngModel)]="team.owner_id">
+                <option *ngFor="let r of organizations;" value="{{r.id}}">{{r.name}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="status">Status</label>
+            <div class="col-md-9">
+              <select id="status" name="status" class="form-control" [(ngModel)]="team.status">
+                <option value="active">Active</option>
+                <option value="deactived">Deactived</option>
+              </select>
+            </div>
+          </div>
+          <div *ngIf="error" class="col-form-label text-danger" >{{error}}</div>
+          <div *ngIf="success" class="col-form-label text-success" >{{success}}</div>
+        </div>
+        <div *ngIf="isAdmins()" class="card-footer">
+          <button class="btn btn-sm btn-primary" (click)="onSubmit()"><i class="fa fa-dot-circle-o"></i> Submit</button>
+          <button class="btn btn-sm btn-danger ml-1" (click)="onReset()"><i class="fa fa-ban"></i> New/Reset</button>
+        </div>
+      </div>
+    </div>
+    <!--/.row-->
+  </div>
+
+
+  <div *ngIf="selectedTeam" class="row">
+
+    <div class="" [ngClass]="{'col-lg-6': isAdmins(), 'col-lg-12': isAdmins() == false}">
+      <div class="card w-100">
+        <div class="card-header">
+          <i class="fa fa-align-justify"></i> User in <b>{{selectedTeam.name}}</b> team
+          <div class="float-right">
+            <button *ngIf="usersChanged && isAdmins()" class="btn btn-sm btn-primary" (click)="onSubmitUsers()"><i class="fa fa-dot-circle-o"></i> Submit Change</button>
+            <button *ngIf="isAdmins()" class="btn btn-sm btn-danger ml-1" (click)="onRemoveUsers()"><i class="fa fa-ban"></i> Remove Selected Users</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered table-striped table-sm">
+            <thead>
+              <tr class="bg-primary text-center text-capitalize">
+                <td style='text-align: center;'>
+                  <input type="checkbox" style='text-align: center;' (click)="selectAllTeamUsers($event)">
+                </td>
+                <th *ngFor="let header of userHeaders;">{{header}}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let r of usersInCurrentTeam;" class="hand-cursor" (click)="selectUserInTeam(r)">
+                <td style='text-align: center;'>
+                  <input type="checkbox" style='text-align: center;' [(ngModel)]="r.selectedForRemoving">
+                </td>
+                <td *ngFor="let key of userHeaders;" [ngClass]="{activeRow: r==selectedTeam}">{{r[key]}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!--/.col-->
+    <!--/.col-->
+    <div *ngIf="isAdmins()" class="col-lg-6">
+      <div class="card w-100">
+        <div class="card-header">
+          <i class="fa fa-align-justify"></i> Users in System
+          <button class="btn btn-sm btn-success float-right" (click)="onAddUser()"><i class="fa fa-user-plus"></i> Add Selected Users</button>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered table-striped table-sm">
+            <thead>
+              <tr class="bg-primary text-center text-capitalize">
+                <td style='text-align: center;'>
+                  <input type="checkbox" style='text-align: center;' (click)="selectAllUsers($event)">
+                </td>
+                <th *ngFor="let header of userHeaders;">{{header}}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let r of usersInSystem;" class="hand-cursor" (click)="selectUserInSystem(r)">
+                <td style='text-align: center;'>
+                  <input type="checkbox" style='text-align: center;' [(ngModel)]="r.selected">
+                </td>
+                <td *ngFor="let key of userHeaders;" [ngClass]="{activeRow: r==selectedTeam}">{{r[key]}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!--/.col-->
+  </div>
+</div>
+<ng-template #user>You don't have permission to open this page!</ng-template>

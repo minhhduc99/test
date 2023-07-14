@@ -1,0 +1,25 @@
+FROM node:14-alpine
+
+ARG NODE_ENV
+
+ENV NODE_ENV=$NODE_ENV
+
+RUN apk add g++ make py3-pip
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN $(npm bin)/ng build
+
+RUN chmod +x /app/entry_point.sh
+ENTRYPOINT [ "/app/entry_point.sh" ]
+
+EXPOSE 4200 3000
+
+
+

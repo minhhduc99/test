@@ -1,0 +1,256 @@
+<div class="animated fadeIn h-100">
+  <div class="row">
+    <div class="col-lg-9">
+      <div class="card w-100">
+        <div class="card-header">
+          <i class="fa fa-align-justify"></i> <strong>Projects</strong><small> ({{projects.length}})</small>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered table-striped table-sm">
+            <thead>
+              <tr class="bg-primary text-center text-capitalize">
+                <th *ngFor="let header of tableHeaders;">{{header}}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let r of projects;" class="hand-cursor" (click)="select(r)"
+                [ngClass]="{'bg-warning': (r.status != 'active')}">
+                <td *ngFor="let key of tableHeaders;" [ngClass]="{activeRow: r==selectedProject}">{{(key=='created' || key == 'updated') ? (r[key] | date: 'dd/MM/yy') : r[key]}}</td>
+
+              </tr>
+            </tbody>
+          </table>
+          <ul *ngIf="numberOfPages > 1" class="pagination">
+            <li *ngIf="currentPage > 0" class="page-item page-link hand-cursor" (click)="prevPage()">Prev</li>
+            <li *ngFor="let item of [].constructor(numberOfPages); let i = index" class="page-item page-link hand-cursor"
+              [ngClass]="{pageactive: i==currentPage}" (click)="selectPage(i)">{{i + 1}}</li>
+            <li *ngIf="currentPage < numberOfPages - 1" class="page-item page-link hand-cursor" (click)="nextPage()">Next</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+    <!--/.col-->
+    <div class="col-lg-3">
+
+      <div class="card">
+        <div class="card-header">
+          <strong *ngIf="selectedProject; else new_content">Edit <small>{{selectedProject.name}}</small></strong>
+          <ng-template #new_content><strong>New Project</strong></ng-template>
+
+        </div>
+        <div class="card-body">
+
+          <div class="form-group">
+            <label for="name">Project Name</label>
+            <input type="text" class="form-control" id="name" name="project" placeholder="Enter Project name" [(ngModel)]="project.name" [readonly]="selectedProject">
+          </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" class="form-control" id="description" name="desc" placeholder="Enter description" [(ngModel)]="project.description">
+          </div>
+          <div class="form-group">
+            <label for="env">Environments</label>
+            <input type="text" class="form-control" id="env" name="env" placeholder="Enter Environments, Eg: DEV, STG, PRD" [(ngModel)]="project.environments">
+          </div>
+          <div class="form-group">
+            <label for="aws-access-key">AWS Access Key</label>
+            <input type="text" class="form-control" id="aws-access-key" name="aws_access_key" placeholder="Enter AWS Access Key" [(ngModel)]="project.aws_access_key">
+          </div>
+          <div class="form-group">
+            <label for="aws-secret-key">AWS Secret Key</label>
+            <input type="text" class="form-control" id="aws-secret-key" name="aws_secret_key" placeholder="Enter AWS Secret Key" [(ngModel)]="project.aws_secret_key">
+          </div>
+          <div class="form-group">
+            <label for="jumphost-id">Jumphost ID</label>
+            <input type="text" class="form-control" id="jumphost-id" name="jumphost_id" placeholder="Enter Jumphost ID" [(ngModel)]="project.jumphost_id">
+          </div>
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="owner">Owner</label>
+            <div class="col-md-9">
+              <select id="owner" name="owner" class="form-control" [(ngModel)]="project.owner_id">
+                <option *ngFor="let r of organizations;" value="{{r.id}}">{{r.name}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="status">Status</label>
+            <div class="col-md-9">
+              <select id="status" name="status" class="form-control" [(ngModel)]="project.status">
+                <option value="active">Active</option>
+                <option value="deactived">Deactived</option>
+              </select>
+            </div>
+          </div>
+          <div *ngIf="error" class="col-form-label text-danger" >{{error}}</div>
+        </div>
+        <div class="card-footer">
+          <button class="btn btn-sm btn-primary" (click)="onSubmit()"><i class="fa fa-dot-circle-o"></i> Submit</button>
+          <button class="btn btn-sm btn-danger ml-1" (click)="onReset()"><i class="fa fa-ban"></i> New/Reset</button>
+        </div>
+      </div>
+    </div>
+    <!--/.row-->
+  </div>
+
+
+
+
+  <tabset *ngIf="selectedProject" >
+    <tab>
+      <div class="row">
+        <ng-template tabHeading><i class="icon-user"></i> Users In Project</ng-template>
+        <div class="col-lg-6">
+          <div class="card w-100">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i> User in <b>{{selectedProject.name}}</b> project
+              <div class="float-right">
+                <button *ngIf="usersChanged" class="btn btn-sm btn-primary" (click)="onSubmitUsers()"><i class="fa fa-dot-circle-o"></i> Submit Change</button>
+                <button class="btn btn-sm btn-danger ml-1" (click)="onRemoveUsers()"><i class="fa fa-ban"></i> Remove Selected Users</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <table class="table table-bordered table-striped table-sm">
+                <thead>
+                  <tr>
+                    <td style='text-align: center;'>
+                      <input type="checkbox" style='text-align: center;' (click)="selectAllProjectUsers($event)">
+                    </td>
+                    <th *ngFor="let header of userHeaders;">{{header}}</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr *ngFor="let r of usersInCurrentProject;" class="hand-cursor" (click)="selectUserInProject(r)">
+                    <td style='text-align: center;'>
+                      <input type="checkbox" style='text-align: center;' [(ngModel)]="r.selectedForRemoving">
+                    </td>
+                    <td *ngFor="let key of userHeaders;" [ngClass]="{activeRow: r==selectedProject}">{{r[key]}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div><!--/.col-->
+        <!--/.col-->
+        <div class="col-lg-6">
+          <div class="card w-100">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i> Users in System
+              <button class="btn btn-sm btn-success float-right" (click)="onAddUser()"><i class="fa fa-user-plus"></i> Add Selected Users</button>
+            </div>
+            <div class="card-body">
+              <table class="table table-bordered table-striped table-sm">
+                <thead>
+                  <tr>
+                    <td style='text-align: center;'>
+                      <input type="checkbox" style='text-align: center;' (click)="selectAllUsers($event)">
+                    </td>
+                    <th *ngFor="let header of userHeaders;">{{header}}</th>
+                  </tr>
+                  <tr class="text-center text-capitalize">
+                    <td style='text-align: center;'>
+                      <button type="button" class="btn btn-ghost" (click)="onClearUserFilters()"><i class="fa fa-remove"></i></button>
+                    </td>
+                    <th *ngFor="let header of userHeaders;"><input type="text" placeholder="{{header}}" class="form-control"
+                      [(ngModel)]="userFilters[header]" (change) = "onUserFilterChanged($event.target.value)"></th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr *ngFor="let r of usersInSystem;" class="hand-cursor" (click)="selectUserInSystem(r)">
+                    <td style='text-align: center;'>
+                      <input type="checkbox" style='text-align: center;' [(ngModel)]="r.selected">
+                    </td>
+                    <td *ngFor="let key of userHeaders;" [ngClass]="{activeRow: r==selectedProject}">{{r[key]}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div><!--/.col-->
+      </div>
+    </tab>
+    <tab>
+      <div class="row">
+        <ng-template tabHeading><i class="icon-screen-desktop"></i> Servers In Project</ng-template>
+        <div class="col-lg-6">
+          <div class="card w-100">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i> Server in <b>{{selectedProject.name}}</b> project
+                <div class="d-inline-block w-20 ml-2">
+                  <select id="env" name="env" class="d-inline-block form-control" [(ngModel)]="env">
+                    <option *ngFor="let e of environments;" value="{{e}}">{{e}}</option>
+                  </select>
+                </div>
+
+              <div class="float-right">
+                <button *ngIf="serversChanged" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Submit Change</button>
+                <button class="btn btn-sm btn-danger ml-1"><i class="fa fa-ban"></i> Remove Selected Servers</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <table class="table table-bordered table-striped table-sm">
+                <thead>
+                  <tr>
+                    <td style='text-align: center;'>
+                      <input type="checkbox" style='text-align: center;'>
+                    </td>
+                    <th *ngFor="let header of serverHeaders;">{{header}}</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr *ngFor="let r of serversInCurrentEnv;" class="hand-cursor">
+                    <td style='text-align: center;'>
+                      <input type="checkbox" style='text-align: center;' [(ngModel)]="r.selectedForRemoving">
+                    </td>
+                    <td *ngFor="let key of serverHeaders;" [ngClass]="{activeRow: r==selectedProject}">{{r[key]}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div><!--/.col-->
+        <!--/.col-->
+        <div class="col-lg-6">
+          <div class="card w-100">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i> Servers in System
+              <button class="btn btn-sm btn-success float-right"><i class="fa fa-user-plus"></i> Add Selected Servers</button>
+            </div>
+            <div class="card-body">
+              <table class="table table-bordered table-striped table-sm">
+                <thead>
+                  <tr>
+                    <td style='text-align: center;'>
+                      <input type="checkbox" style='text-align: center;'>
+                    </td>
+                    <th *ngFor="let header of serverHeaders;">{{header}}</th>
+                  </tr>
+                  <tr class="text-center text-capitalize">
+                    <td style='text-align: center;'>
+                      <button type="button" class="btn btn-ghost"><i class="fa fa-remove"></i></button>
+                    </td>
+                    <th *ngFor="let header of serverHeaders;"><input type="text" placeholder="{{header}}" class="form-control"
+                      [(ngModel)]="serverFilters[header]"></th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr *ngFor="let r of serversInSystem;" class="hand-cursor" (click)="selectUserInSystem(r)">
+                    <td style='text-align: center;'>
+                      <input type="checkbox" style='text-align: center;' [(ngModel)]="r.selected">
+                    </td>
+                    <td *ngFor="let key of serverHeaders;" [ngClass]="{activeRow: r==selectedProject}">{{r[key]}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div><!--/.col-->
+      </div>
+    </tab>
+  </tabset>
+</div>

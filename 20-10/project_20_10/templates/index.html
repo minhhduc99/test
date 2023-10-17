@@ -1,0 +1,180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Audiowide&family=Playball&display=swap");
+      body {
+        background-image: linear-gradient(
+          to right top,
+          #1f0537,
+          #896ba3,
+          #78489f,
+          #7a47a0,
+          #9612eb
+        );
+        height: 100%;
+        margin: 0;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+      }
+
+      .card {
+        position: relative;
+        width: 300px;
+        height: 425px;
+        border: 10px solid #c676f8;
+        margin: 60px auto 0 auto;
+        box-shadow: inset 10px 0px 15px 0px rgba(0, 0, 0, 0.1);
+        background-image: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255),
+            rgba(255, 255, 255, 0.5)
+          ),
+          url("https://scontent.fhan2-2.fna.fbcdn.net/v/t1.6435-9/54099060_2831883753702928_6965932093591257088_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=174925&_nc_ohc=bZ6NFO9gN8EAX9v4qEF&_nc_ht=scontent.fhan2-2.fna&oh=00_AT_678PY_olWUEfIfKj1CxeZcI05hs1MVpqR08cY6PgOYg&oe=62C4F3DC");
+
+        background-position: center;
+        /* Center the image */
+        background-repeat: no-repeat;
+        /* Do not repeat the image */
+        background-size: cover;
+        background-color: #e6f0e6;
+      }
+
+      .card .text-container {
+        width: 80%;
+        height: 80%;
+        margin: auto;
+      }
+
+      .strikethrough {
+        text-decoration: line-through;
+      }
+
+      .card .text-container #head {
+        font-family: "Nobile", sans-serif;
+        font-size: 1.5em;
+        margin: 60px auto 60px auto;
+      }
+
+      .card p {
+        font-size: 1.1em;
+        line-height: 1.4;
+        font-family: "Nobile";
+        color: #331717;
+        font-style: italic;
+        text-align: center;
+        margin: 25px auto 0px auto;
+      }
+
+      #ket {
+        margin: 10px 0px 0px 0px;
+      }
+
+      .card .front {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        margin: -10px 0px 0px -10px;
+        border: 10px solid #d5a3f5;
+        backface-visibility: hidden;
+        background-color: #d5a3f5;
+        /* background-image: url($cover-image);
+	 */
+        background-size: contain;
+        transform-style: preserve-3d;
+        transform-origin: 0% 50%;
+        transform: perspective(800px) rotateY(0deg);
+        transition: all 0.8s ease-in-out;
+      }
+
+      .card:hover .front {
+        transform: perspective(800px) rotateY(-170deg);
+        background-color: #41718d;
+      }
+
+      .card:hover .back {
+        transform: perspective(800px) rotateY(-170deg);
+        box-shadow: 7px 0px 5px 0px rgba(0, 0, 0, 0.3),
+          inset 2px 0px 15px 0px rgba(0, 0, 0, 0.1);
+        background-image: url("{% static "image.png" %}");
+        background-position: center;
+        /* Center the image */
+        background-repeat: no-repeat;
+        /* Do not repeat the image */
+        background-size: cover;
+      }
+
+      .card .back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 10px solid #c676f8;
+        margin: -10px 0px 0px -10px;
+        backface-visibility: visible;
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+        transform-style: preserve-3d;
+        transform-origin: 0% 50%;
+        transform: perspective(800px) rotateY(0deg);
+        transition: all 0.8s ease-in-out;
+        /* background-color: #e6f0e6; */
+        background-image: url("https://scontent.fhan2-2.fna.fbcdn.net/v/t39.30808-6/277569910_3891670021057624_2752814986030126044_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=Jv03Nxl2Zl0AX9nbK7_&_nc_ht=scontent.fhan2-2.fna&oh=00_AT8jofyilitxziSa7oLmpsV2jaEz_HgAvzpH8SG5Z9_zNg&oe=62A51052");
+        background-position: center;
+        /* Center the image */
+        background-repeat: no-repeat;
+        /* Do not repeat the image */
+        background-size: cover;
+        box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.1);
+      }
+
+      .imgset {
+        position: relative;
+        z-index: 1;
+        margin-bottom: -215px;
+      }
+
+      .imgset img {
+        box-shadow: 0px 6px 11px 7px rgba(0, 0, 0, 0.22);
+        border-radius: 5px;
+      }
+
+      img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+    </style>
+    {% comment %}
+    <link rel="stylesheet" href="./style.css" />
+    {% endcomment %}
+    <audio
+      type="audio/mp3"
+      loop
+      controls="none"
+      autoplay
+      id="audio2"
+      hidden
+      src=""
+    ></audio>
+    <title>20-10</title>
+  </head>
+
+  <body>
+    <div class="card">
+      <div class="back"></div>
+      <div class="front">
+        <div class="imgset">
+          <img style="object-fit: contain" src="{% static 'flower.jpg'%}" />
+        </div>
+      </div>
+      <div class="text-container">
+        <p id="head">Chúc mừng ngày phụ nữ Việt Nam 20-10!</p>
+        <p>Luôn vui vẻ hạnh phúc và yêu đời nhé!</p>
+        <p>Chúc cậu sẽ luôn luôn là đóa hoa đẹp nhất !</p>
+      </div>
+    </div>
+  </body>
+</html>
